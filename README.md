@@ -421,18 +421,12 @@ There are three ways to see things, in order of preference.
    Tracing. One client per session; File > Exit ends it and frees the GPU.
 
 Isaac Sim, RTX Real-Time viewport, the JWST scene with the inspector and star
-field (live FPS/frame-time HUD, top-right):
+field (live FPS/frame-time HUD, top-right). Switching the renderer to RTX Path
+Tracing in the viewport toolbar gives physically accurate glare and soft
+shadows and the HUD counts accumulated samples-per-pixel; the hero render at
+the top of this README is that mode's output:
 
 ![Isaac Sim RTX Real-Time viewport](assets/screenshots/isaacsim_realtime_hud.png)
-
-The same scene switched to RTX Path Tracing (physically accurate glare and soft
-shadows; the HUD shows accumulated samples-per-pixel):
-
-![Isaac Sim RTX Path Tracing](assets/screenshots/isaacsim_pathtraced_hud.png)
-
-USD Composer authoring the same stage, streamed to the WebRTC client:
-
-![USD Composer streamed over WebRTC](assets/screenshots/omniverse_composer_connected.png)
 
 ### 9.2 Launch the GUI without an SSH client
 
@@ -571,8 +565,6 @@ independent RK4 integration of the same equations. Measured on the box: over a
 55.5 m inspection path with two thruster burns, the PhysX trajectory tracked the
 analytic solution to a final drift of 0.29 m (RMS 0.15 m) - the physics engine
 and the closed-form orbital mechanics agree.
-
-![PhysX zero-g orbital demo mid-burn](assets/screenshots/physx_demo_midburn.png)
 
 An animated version (`assets/screenshots/physx_orbital_demo.gif` / `.mp4`) shows
 the full fly-around. To watch this physics run live, `jwst-gui physx` (or the
@@ -743,8 +735,6 @@ him to sanity-check a plan, prep for a review, or as an extra voice in a team
 meeting. Measured on this box: he starts answering about half a second after
 you stop talking (439-530 ms across the validation calls).
 
-![Ask Jensen floating over the desktop](assets/screenshots/ask_jensen_floating.png)
-
 Honesty note: he is an AI character with a synthetic face and voice - not the
 real Jensen Huang - and he will say so if you ask.
 
@@ -767,8 +757,6 @@ You do not have to speak: the text box at the bottom takes typed questions -
 write one, press Enter, and Jensen answers out loud (about 1.2 s from Enter to
 speech on the validation calls). Voice and typing mix freely in one
 conversation; Mute the mic if you only want to type.
-
-![Typing a question to Jensen](assets/screenshots/ask_jensen_typed.png)
 
 ### Any OS: browser fallback
 
