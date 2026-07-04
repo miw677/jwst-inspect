@@ -6,6 +6,11 @@ it (a stub scene works); we publish a stable interface the others consume. Our
 GitLab fork is `nvidia-harvard/jwst_inspect-benchmark`; the project-wide git
 rules are in [docs/gitlab_workflow.md](../docs/gitlab_workflow.md).
 
+How the three teams stay independent and where our published artifacts feed
+the others (dashed = optional, never blocking):
+
+![Team independence and workflow](../assets/diagrams/teams_independant_workflow.png)
+
 ## How our folders are organized
 
 Our tree inside the repo (`benchmark/` in every clone of the fork):
