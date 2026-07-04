@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=JupyterHub
+Comment=Notebooks in the browser (CPU or GPU profiles)
+Exec=xdg-open http://jwst-ws:8000
+Icon=/data/shared/project/assets/icons/jupyter.png
+Terminal=false
+Categories=Science;Education;
+StartupNotify=false

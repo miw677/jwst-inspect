@@ -1,0 +1,25 @@
+{
+  "schema_version": "0",
+  "description": "JWST-Inspect synthetic dataset schema (Group 2). One record per rendered frame plus per-episode metadata. Regenerated reproducibly from a fixed seed by replicator_generate.py against the Digital Twin scene. Consumed by Benchmark perception baselines and (optionally) Autonomous perception.",
+  "frame": {
+    "rgb": {"dtype": "uint8", "shape": ["H", "W", 3], "file": "rgb_{frame:06d}.png"},
+    "depth": {"dtype": "float32", "shape": ["H", "W"], "units": "meters", "file": "distance_to_camera_{frame:06d}.npy", "annotator": "distance_to_camera"},
+    "semantic_segmentation": {"dtype": "uint32", "shape": ["H", "W"], "file": "semantic_segmentation_{frame:06d}.png", "labels": "semantic_segmentation_labels_{frame:06d}.json", "classes": "groups/digital_twin/interface/semantic_labels_v0.json"},
+    "instance_segmentation": {"dtype": "uint32", "shape": ["H", "W"], "file": "instance_segmentation_{frame:06d}.png", "mapping": "instance_segmentation_mapping_{frame:06d}.json"},
+    "camera_intrinsics": {"keys": ["fx", "fy", "cx", "cy", "width", "height"]},
+    "camera_extrinsics": {"keys": ["position_xyz_m", "quat_wxyz", "look_at_xyz_m"], "frame": "world (/World), Z-up, meters"},
+    "inspector_state": {"keys": ["position_xyz_m", "quat_wxyz", "lin_vel_mps", "ang_vel_radps", "standoff_m", "in_keep_out", "in_corridor"]},
+    "lighting_params": {"keys": ["variant", "sun_intensity", "sun_azimuth_deg", "sun_elevation_deg", "dome_intensity", "exposure"]},
+    "material_params": {"keys": ["gold_roughness", "specular_scale"]},
+    "anomaly": {"keys": ["has_anomaly", "anomaly_class", "anomaly_component", "anomaly_bbox_xyxy"], "mask_file": "anomaly_mask_{frame:06d}.png"},
+    "task_label": {"enum": ["approach_hold", "sunshield_survey", "mirror_inspection", "anomaly_detection"]}
+  },
+  "episode_metadata": {
+    "keys": ["episode_id", "seed", "scene_usd", "scene_sha256", "num_frames", "renderer", "spp", "resolution", "task", "created_utc", "image_tag", "code_git_sha"]
+  },
+  "anomaly_classes": [
+    "missing_or_obscured_component", "unexpected_glare", "sunshield_deformation_proxy",
+    "mirror_region_visual_anomaly", "sensor_confidence_failure"
+  ],
+  "splits": {"policy": "by episode_id hash; train/val/test fractions are env knobs (DATASET_TRAIN_FRAC etc.), documented in data_card.md", "note": "splits are deterministic given the seed so regeneration reproduces them"}
+}

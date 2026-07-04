@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Isaac Sim
+Comment=Full Isaac Sim robotics simulator (streams to the WebRTC viewer)
+Exec=jwst-gui isaac
+Icon=/data/shared/project/assets/icons/isaacsim.png
+Terminal=true
+Categories=Science;Education;
+StartupNotify=false

@@ -1,0 +1,6 @@
+asset,source,source_url,license,format,bytes,sha256,intended_use,notes
+jwst_glb_seed,NASA 3D Resources,https://science.nasa.gov/3d-resources/james-webb-space-telescope-b/,NASA media usage,GLB,,,seed geometry for USD conversion,low fidelity; rebuild key parts for v1
+jwst_stl_detailed,NASA 3D-printing model,https://science.nasa.gov/asset/webb/webb-telescope-model-for-3d-printing-detailed-version/,NASA media usage,STL,,,high-detail geometry reference,page-gated; select components
+inspector_microsat,student-authored,,project-internal,USD,,,final inspector vehicle,inspired by Mini AERCam/Seeker/LICIACube
+# Fill bytes/sha256 from /data/shared/raw/manifest.csv as assets are imported.
+# This manifest is a published interface artifact; copy to /data/shared/assets/.

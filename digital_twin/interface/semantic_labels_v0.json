@@ -1,0 +1,40 @@
+{
+  "schema_version": "0",
+  "description": "JWST-Inspect semantic label map and component taxonomy. Published by the Digital Twin team; consumed by Benchmark (Replicator semantics) and Autonomous (observation labels). Class ids are stable; add new classes at the end (never renumber).",
+  "frame_note": "Geometry, scale, and safety-region dimensions are parameterized in groups/digital_twin/src/jwst_scene.py via env knobs (never hardcoded literals). This file holds the schema, not the dimensions.",
+  "classes": [
+    {"id": 0, "name": "background"},
+    {"id": 1, "name": "primary_mirror_segment"},
+    {"id": 2, "name": "secondary_mirror"},
+    {"id": 3, "name": "secondary_support_strut"},
+    {"id": 4, "name": "aft_optics"},
+    {"id": 5, "name": "instrument_housing"},
+    {"id": 6, "name": "sunshield_layer"},
+    {"id": 7, "name": "spacecraft_bus"},
+    {"id": 8, "name": "solar_array"},
+    {"id": 9, "name": "high_gain_antenna"},
+    {"id": 10, "name": "star_tracker"},
+    {"id": 11, "name": "truss"},
+    {"id": 12, "name": "backplane"},
+    {"id": 13, "name": "inspector"}
+  ],
+  "components": [
+    {"path": "primary_mirror", "class": "primary_mirror_segment", "instances": 18, "match": ["mirror", "primary", "segment", "hexagon", "gold"]},
+    {"path": "secondary_mirror", "class": "secondary_mirror", "instances": 1, "match": ["secondary"]},
+    {"path": "secondary_support", "class": "secondary_support_strut", "instances": 3, "match": ["strut", "tripod", "support"]},
+    {"path": "aft_optics", "class": "aft_optics", "instances": 1, "match": ["aft", "optics", "aos"]},
+    {"path": "instruments", "class": "instrument_housing", "instances": 1, "match": ["instrument", "isim", "fgs", "nirspec", "miri", "nircam"]},
+    {"path": "sunshield", "class": "sunshield_layer", "instances": 5, "match": ["sunshield", "shield", "kapton", "membrane", "layer"]},
+    {"path": "bus", "class": "spacecraft_bus", "instances": 1, "match": ["bus", "spacecraft", "svm", "core"]},
+    {"path": "solar_array", "class": "solar_array", "instances": 1, "match": ["solar", "array", "panel"]},
+    {"path": "antenna", "class": "high_gain_antenna", "instances": 1, "match": ["antenna", "gimbal", "hga", "dish"]},
+    {"path": "star_trackers", "class": "star_tracker", "instances": 2, "match": ["star", "tracker"]},
+    {"path": "trusses", "class": "truss", "instances": 1, "match": ["truss", "boom", "spreader"]},
+    {"path": "backplane", "class": "backplane", "instances": 1, "match": ["backplane", "pmba", "bsf"]}
+  ],
+  "safety_classes": ["keep_out_zone", "standoff_shell", "approach_corridor"],
+  "consumers": {
+    "benchmark": "applies these classes as Replicator semantics on the published scene prims",
+    "autonomous": "uses class ids for perception/observation features and viewpoint coverage"
+  }
+}

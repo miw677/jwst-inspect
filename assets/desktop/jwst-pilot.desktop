@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Pilot the Microsat
+Comment=Fly the inspector microsat around JWST (streams to the viewer)
+Exec=jwst-gui pilot
+Icon=/data/shared/project/assets/icons/pilot.png
+Terminal=true
+Categories=Science;Education;
+StartupNotify=false

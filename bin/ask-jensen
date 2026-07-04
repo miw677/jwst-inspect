@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# ask-jensen - launch the Ask Jensen overlay (floating real-time NVIDIA-insider
+# avatar). Needs a desktop session; students typically run the AppImage on
+# their own laptop. Knobs: AJ_SERVICE_URL (default http://jwst-ws:8600),
+# AJ_WIN_W/AJ_WIN_H, AJ_KEY_THRESHOLD/AJ_KEY_SMOOTH.
+set -euo pipefail
+APPIMAGE="${ASK_JENSEN_APPIMAGE:-/data/shared/project/assets/tools/AskJensen-x86_64.AppImage}"
+[ -f "$APPIMAGE" ] || { echo "ERROR: AppImage missing at $APPIMAGE"; exit 3; }
+[ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ] || {
+  echo "ERROR: no display. Run this on a machine with a desktop session"
+  echo "(your laptop), or join from a browser instead:"
+  echo "  curl -X POST ${AJ_SERVICE_URL:-http://jwst-ws:8600}/conversation"
+  echo "then open the returned conversation_url in any browser."
+  exit 4
+}
+exec "$APPIMAGE" "$@"

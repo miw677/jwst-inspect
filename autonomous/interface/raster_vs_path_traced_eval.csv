@@ -1,0 +1,8 @@
+policy,seed,render_mode,coverage,mean_standoff_error_m,safety_violations,abort_rate,mean_rel_velocity_ms,task_success,notes
+# One row per (policy, seed, render_mode). render_mode in {rasterized, path_traced}.
+# The R2P gap per metric = path_traced value - rasterized value, computed downstream.
+# Example rows (replace with real eval output; numbers must come from eval artifacts):
+# scripted,0,rasterized,,,,,,,
+# scripted,0,path_traced,,,,,,,
+# ppo,0,rasterized,,,,,,,
+# ppo,0,path_traced,,,,,,,

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Isaac Lab Training
+Comment=Reinforcement-learning training demo with live throughput
+Exec=jwst-gui lab
+Icon=/data/shared/project/assets/icons/isaaclab.png
+Terminal=true
+Categories=Science;Education;
+StartupNotify=false

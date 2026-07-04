@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=GPU Health Check
+Comment=One-shot GPU snapshot with plain-language interpretation
+Exec=jwst-gpucheck pause
+Icon=/data/shared/project/assets/icons/gpumonitor.png
+Terminal=true
+Categories=Science;Education;
+StartupNotify=false

@@ -1,0 +1,23 @@
+# Runtime caches, container filesystems, run outputs, secrets, and large local-only data
+# stay on the workstation; only source, docs, interfaces, and the curated data mirror are tracked.
+.env
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+.DS_Store
+nohup.out
+slurm-*.out
+*.sqsh
+*.tgz
+wandb/
+mlruns/
+isaac-cache/
+ov-cache/
+oci-rootfs/
+oci-bundles/
+jwst-inspect-deploy/
+jwst-inspect-current
+runs/
+latest_*_run.txt
+NASA-3D-Resources/
+_pre_monorepo_backup/

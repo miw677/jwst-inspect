@@ -1,0 +1,63 @@
+#usda 1.0
+(
+    doc = "JWST-Inspect Digital Twin STUB. Minimal but valid OpenUSD stage that
+           the Benchmark and Autonomous teams can consume immediately while the
+           high-fidelity jwst_inspect_scene_v1 is authored. Component hierarchy,
+           semantic labels (see semantic_labels_v0.json), coordinate frames (see
+           coordinate_frames.md), and safety regions are present as named prims.
+           Geometry here is placeholder bounding shapes; swap in real meshes from
+           /data/shared/raw/jwst_geometry as authoring progresses."
+    defaultPrim = "World"
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+def Xform "World"
+{
+    def Xform "JWST" (
+        kind = "assembly"
+    )
+    {
+        custom string semantic:class = "jwst"
+        def Scope "PrimaryMirror" { custom string semantic:class = "primary_mirror"
+            # 18 gold segments authored individually in v1; placeholder scope here.
+            def Cube "segment_placeholder" { double size = 6.5 }
+        }
+        def Scope "SecondaryMirrorSupport" { custom string semantic:class = "secondary_support" }
+        def Scope "Sunshield" { custom string semantic:class = "sunshield"
+            # five-layer Kapton-like membranes in v1.
+        }
+        def Scope "SpacecraftBus" { custom string semantic:class = "bus" }
+        def Scope "SolarArray" { custom string semantic:class = "solar_array" }
+        def Scope "Antenna" { custom string semantic:class = "antenna" }
+        def Scope "StarTrackers" { custom string semantic:class = "star_tracker" }
+    }
+
+    def Xform "Inspector" (
+        doc = "Free-flying inspection microsat (placeholder body + sensor mounts)."
+    )
+    {
+        custom string semantic:class = "inspector"
+        double3 xformOp:translate = (0, -15, 0)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+        def Cube "body" { double size = 0.6 }
+        def Scope "Sensors" {
+            def Xform "stereo_rgb" { custom string semantic:class = "sensor_rgb" }
+            def Xform "depth_lidar" { custom string semantic:class = "sensor_depth" }
+            def Xform "imu" { custom string semantic:class = "sensor_imu" }
+        }
+    }
+
+    def Scope "SafetyRegions" (
+        doc = "Drive the Autonomous team's safety metrics. Values are nominal; the
+               Autonomous team reads these as the source of truth for the scene."
+    )
+    {
+        def Sphere "KeepOutZone" { custom string semantic:class = "keep_out"; double radius = 8 }
+        def Sphere "StandoffTarget" { custom string semantic:class = "standoff"; double radius = 15 }
+        def Cone "ApproachCorridor" { custom string semantic:class = "approach_corridor"; double radius = 6; double height = 25 }
+        def Sphere "AbortBoundary" { custom string semantic:class = "abort"; double radius = 5 }
+    }
+
+    def Scope "Lighting" { def DistantLight "Sun" { float inputs:intensity = 1000 } }
+}

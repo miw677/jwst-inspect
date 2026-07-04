@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Ask Jensen
+Comment=Talk to Jensen - real-time NVIDIA insider avatar (voice and typed questions)
+Exec=ask-jensen
+Icon=/data/shared/project/assets/icons/ask-jensen.png
+Terminal=false
+Categories=Science;Education;
+StartupNotify=false

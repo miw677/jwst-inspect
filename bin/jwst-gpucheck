@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# jwst-gpucheck - snapshot the GPUs and tell you whether they are being used
+# well, with plain-language flags when something looks wrong. Safe to run any
+# time (read-only). Thresholds are env-overridable so you can tune them.
+#
+#   jwst-gpucheck            # one snapshot + interpretation
+#   jwst-gpucheck watch      # live view (nvidia-smi dmon), Ctrl-C to stop
+set -euo pipefail
+
+TEMP_WARN="${JWST_GPU_TEMP_WARN:-84}"       # C, alert threshold used on the box
+UTIL_LOW="${JWST_GPU_UTIL_LOW:-30}"         # %, "busy job but low util" flag
+MEM_STALE_MIB="${JWST_GPU_MEM_STALE_MIB:-500}"  # MiB in use with 0% util -> maybe stale
+
+if [ "${1:-}" = "watch" ]; then
+  echo "Live GPU monitor (Ctrl-C to stop). Columns: sm=compute% mem=mem-bw% pwr=W gtemp=C"
+  exec nvidia-smi dmon -s pucm
+fi
+# pause: run once then wait for a key (used by the desktop launcher icon)
+if [ "${1:-}" = "pause" ]; then
+  "$0"
+  echo
+  read -rp "Press Enter to close..."
+  exit 0
+fi
+
+echo "== GPU snapshot $(date -u +%Y-%m-%dT%H:%M:%SZ) on $(hostname) =="
+nvidia-smi --query-gpu=index,name,utilization.gpu,memory.used,memory.total,temperature.gpu,power.draw,power.limit \
+  --format=csv,noheader,nounits | while IFS=, read -r idx name util memu memt temp pwr cap; do
+  idx=$(echo "$idx" | xargs); util=$(echo "$util" | xargs); memu=$(echo "$memu" | xargs)
+  memt=$(echo "$memt" | xargs); temp=$(echo "$temp" | xargs); pwr=$(echo "$pwr" | xargs); cap=$(echo "$cap" | xargs)
+  pct_pwr=$(awk -v p="$pwr" -v c="$cap" 'BEGIN{printf "%d", (c>0)?100*p/c:0}')
+  pct_mem=$(awk -v u="$memu" -v t="$memt" 'BEGIN{printf "%d", (t>0)?100*u/t:0}')
+  printf "GPU %s (%s)\n" "$idx" "$(echo "$name" | xargs)"
+  printf "   util %3s%%   mem %6s/%6s MiB (%s%%)   temp %s C   power %s/%s W (%s%%)\n" \
+    "$util" "$memu" "$memt" "$pct_mem" "$temp" "$pwr" "$cap" "$pct_pwr"
+  # Interpretation
+  if [ "$util" -ge 80 ]; then
+    echo "   [good] compute-bound: the GPU is working hard, this is what a healthy training/render looks like."
+  elif [ "$util" -ge "$UTIL_LOW" ]; then
+    echo "   [ok] partially used: fine for interactive/authoring; for training, aim higher (see flags)."
+  fi
+  # Flags
+  if [ "$temp" -ge "$TEMP_WARN" ]; then
+    echo "   [FLAG] temp ${temp} C >= ${TEMP_WARN} C: thermal pressure. Tell the admin; do not change power caps."
+  fi
+  if [ "$memu" -ge "$MEM_STALE_MIB" ] && [ "$util" -lt 5 ]; then
+    echo "   [FLAG] ${memu} MiB held at ~0% util: possibly a stale process. If it is not yours and no job is running, ask the admin."
+  fi
+  if [ "$util" -ge 80 ] && [ "$pct_pwr" -lt 40 ]; then
+    echo "   [FLAG] high util but low power: likely memory/data-loading bound, not compute. Check your input pipeline."
+  fi
+done
+
+echo
+echo "What good looks like:"
+echo "   training  : util 80-100%, power near the cap, memory steady (a few GB or more)."
+echo "   rendering : util high in bursts, power high; path tracing pins the GPU until samples converge."
+echo "   idle      : util 0%, memory near 0, temp low - nothing is running (or your job is queued)."
+echo
+echo "Your Slurm jobs:  squeue -u \$USER      finished-job usage:  sacct -j <jobid> --format=JobID,Elapsed,MaxRSS,State,AllocTRES"
+echo "Live view:        jwst-gpucheck watch   (or: nvtop)"

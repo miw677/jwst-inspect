@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=MLflow Experiments
+Comment=Shared experiment tracking dashboard
+Exec=xdg-open http://jwst-ws:5000
+Icon=/data/shared/project/assets/icons/mlflow.png
+Terminal=false
+Categories=Science;Education;
+StartupNotify=false

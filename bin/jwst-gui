@@ -1,0 +1,166 @@
+#!/usr/bin/env bash
+# jwst-gui - one place to launch a visual NVIDIA app and see it on your screen.
+# It schedules the app on a GPU through Slurm and prints exactly how to connect
+# the viewer. Modes:
+#
+#   1. isaac     - full Isaac Sim app, viewed in the WebRTC Streaming Client
+#   2. composer  - USD Composer (scene authoring), same client
+#   3. pilot     - fly the inspector microsat around JWST (same client)
+#   4. physx     - hands-off PhysX orbital-mechanics demo around JWST (same client)
+#   5. lab       - Isaac Lab RL training demo, live throughput in this terminal
+#   6. render    - no client app: render a USD stage to a PNG you open in
+#                  JupyterHub (works with only a browser)
+#   7. viewer    - open the WebRTC Streaming Client on this machine's desktop
+#
+# Usage:
+#   jwst-gui isaac | composer | pilot [shower] | physx | lab | viewer
+#   jwst-gui render /data/shared/raw/jwst_geometry/model_a/nasa-jwst-model-a.usdc
+set -euo pipefail
+
+MODE="${1:-help}"
+CLIENT="/data/shared/project/assets/tools/isaacsim-webrtc-streaming-client-1.1.5-linux-x64.AppImage"
+
+print_connect() {
+  cat <<EOF
+
+------------------------------------------------------------------
+The app is starting on a GPU. When you see the "loaded" line above:
+  1. On your laptop, open the Isaac Sim WebRTC Streaming Client.
+     - Download once from:
+       https://docs.isaacsim.omniverse.nvidia.com/5.1.0/installation/download.html
+     - A Linux copy is on the box at:
+       ${CLIENT}
+  2. Server = jwst-ws  (signaling TCP 49100, media UDP 47998; open on Tailscale)
+  3. Click Connect. Open a stage from File > Open, e.g. /data/shared/assets/
+No SSH client? Start this same command from a JupyterHub browser terminal
+  (http://jwst-ws:8000  ->  New  ->  Terminal). You still connect the viewer
+  the same way. If you cannot install the viewer at all, use:  jwst-gui render
+Exit the app (File > Exit) when done so the GPU frees for others.
+------------------------------------------------------------------
+EOF
+}
+
+case "$MODE" in
+  isaac)
+    print_connect
+    exec jwst-stream isaac
+    ;;
+  composer)
+    print_connect
+    exec jwst-stream composer
+    ;;
+  pilot)
+    # Manually flyable inspector microsat: zero-g PhysX + orbital mechanics,
+    # FPV camera, sensors, photos, optional MMOD meteor shower + report.
+    [ "${2:-}" = "shower" ] && export PILOT_EVENT=shower
+    cat <<EOF
+
+------------------------------------------------------------------
+PILOT MODE - fly the inspector microsat around JWST.
+Controls (click inside the streamed viewport first):
+  W/S   forward/back      arrows  pitch (UP/DOWN) + yaw (LEFT/RIGHT)
+  A/D   right/left        Q/E     roll
+  R/F   up/down           SPACE   hold to brake (damp rates + velocity)
+  T     auto rate-damp on/off     [ ]  halve/double thrust authority
+  V     FPV/chase view    P  photo    G  sensor sweep (rgb+depth+semantic)
+  M     arm meteor shower ENTER  write inspection report   ESC  quit
+Telemetry: watch the "Pilot HUD" panel (range, speed, dv budget, sensors).
+Outputs land in \$PILOT_OUT (default ~/scratch-mapped /data/scratch/\$USER/pilot_<utc>).
+EOF
+    print_connect
+    # forward every PILOT_*/FF_*/INSP_*/JWST_*/SEED knob into the container
+    KNOBS="ACCEPT_EULA,PRIVACY_CONSENT"
+    for var in $(compgen -e | grep -E '^(PILOT_|FF_|INSP_|JWST_|SEED$)' || true); do
+      KNOBS="${KNOBS},${var}"
+    done
+    export ACCEPT_EULA="${ACCEPT_EULA:-Y}" PRIVACY_CONSENT="${PRIVACY_CONSENT:-Y}"
+    export PILOT_OUT="${PILOT_OUT:-/data/scratch/${USER}/pilot_$(date -u +%Y%m%d_%H%M%S)}"
+    KNOBS="${KNOBS},PILOT_OUT"
+    echo "Requesting 1 GPU on '${STREAM_PARTITION:-interactive}' for the pilot (outputs -> ${PILOT_OUT})..."
+    exec srun -p "${STREAM_PARTITION:-interactive}" --gres=gpu:1 --cpus-per-task=8 --mem=48G --pty \
+      --container-image="${KIT_STREAM_IMAGE:-/data/shared/containers/isaac-sim.sqsh}" \
+      --no-container-entrypoint --container-writable \
+      --container-mounts=/data:/data,/data/shared/ov-cache/kit:/isaac-sim/kit/cache \
+      --container-env="$KNOBS" \
+      bash -c 'unset CONDA_PREFIX PYTHONPATH; cd /data/shared/project/bin && /isaac-sim/python.sh /data/shared/project/bin/_pilot_microsat.py'
+    ;;
+  physx)
+    cat <<EOF
+
+------------------------------------------------------------------
+PHYSX DEMO - zero-gravity orbital mechanics around JWST, live.
+A PhysX rigid-body inspector flies Clohessy-Wiltshire relative-orbit
+dynamics (real per-step forces + thruster burns + debris field); the
+terminal prints the PhysX-vs-analytic drift as it runs. Watch it in
+the WebRTC client. Knobs: DEMO_SIM_S, DEMO_TIME_WARP, DEMO_DEBRIS_N,
+DEMO_BURNS, DEMO_HOLD_S.
+EOF
+    print_connect
+    export ACCEPT_EULA="${ACCEPT_EULA:-Y}" PRIVACY_CONSENT="${PRIVACY_CONSENT:-Y}"
+    KNOBS="ACCEPT_EULA,PRIVACY_CONSENT"
+    for var in $(compgen -e | grep -E '^(DEMO_|FF_|JWST_|SEED$)' || true); do
+      KNOBS="${KNOBS},${var}"
+    done
+    echo "Requesting 1 GPU on '${STREAM_PARTITION:-interactive}' for the PhysX demo..."
+    exec srun -p "${STREAM_PARTITION:-interactive}" --gres=gpu:1 --cpus-per-task=8 --mem=48G --pty \
+      --container-image="${KIT_STREAM_IMAGE:-/data/shared/containers/isaac-sim.sqsh}" \
+      --no-container-entrypoint --container-writable \
+      --container-mounts=/data:/data,/data/shared/ov-cache/kit:/isaac-sim/kit/cache \
+      --container-env="$KNOBS" \
+      bash -c '/isaac-sim/python.sh /data/shared/project/bin/_physx_demo.py'
+    ;;
+  lab)
+    TASK="${2:-${LAB_TASK:-Isaac-Cartpole-v0}}"
+    ITER="${LAB_ITER:-150}"
+    cat <<EOF
+
+------------------------------------------------------------------
+ISAAC LAB - reinforcement-learning training demo (task ${TASK}).
+Runs headless on a GPU; watch the live 'fps step:' throughput and the
+rising reward in this terminal. Ctrl-C or scancel to stop early.
+Knobs: LAB_TASK (any Isaac Lab task), LAB_ITER (default ${ITER}).
+Your own training belongs in ~/team; this is the quick-start path.
+------------------------------------------------------------------
+EOF
+    exec srun -p "${STREAM_PARTITION:-interactive}" --gres=gpu:1 --cpus-per-task=16 --mem=64G --pty \
+      --container-image=/data/shared/containers/isaac-lab.sqsh \
+      --no-container-entrypoint --container-writable \
+      --container-mounts=/data:/data,/data/shared/ov-cache/kit:/isaac-sim/kit/cache \
+      bash -c "unset VIRTUAL_ENV; export TERM=xterm-256color; cd /data/shared/env/IsaacLab && \
+        ./isaaclab.sh -p scripts/reinforcement_learning/rl_games/train.py \
+        --task ${TASK} --headless --max_iterations ${ITER}"
+    ;;
+  viewer)
+    [ -x "$CLIENT" ] || { echo "viewer AppImage missing at ${CLIENT}"; exit 3; }
+    echo "Opening the Isaac Sim WebRTC Streaming Client (Server = jwst-ws or 127.0.0.1 on this machine)..."
+    exec "$CLIENT"
+    ;;
+  render)
+    STAGE="${2:-}"
+    [ -n "$STAGE" ] || { echo "usage: jwst-gui render /path/to/stage.usd [out.png]"; exit 2; }
+    OUT="${3:-$HOME/scratch/render_$(date +%s).png}"
+    mkdir -p "$(dirname "$OUT")"
+    echo "Rendering ${STAGE} -> ${OUT} on a GPU (path-traced). Open the PNG in JupyterHub when done."
+    RENDER_STAGE="$STAGE" RENDER_OUT="$OUT" \
+    srun -p interactive --gres=gpu:1 --cpus-per-task=8 --mem=32G --time=00:20:00 \
+      --container-image=/data/shared/containers/isaac-sim.sqsh --no-container-entrypoint --container-writable \
+      --container-mounts=/data:/data,/data/shared/ov-cache/kit:/isaac-sim/kit/cache \
+      --container-env=RENDER_STAGE,RENDER_OUT,ACCEPT_EULA=Y,PRIVACY_CONSENT=Y \
+      bash -c '/isaac-sim/python.sh /data/shared/project/bin/_render_to_image.py'
+    echo "Done. In a JupyterHub notebook:  from IPython.display import Image; Image('${OUT}')"
+    ;;
+  *)
+    cat <<EOF
+jwst-gui - launch a visual NVIDIA app and see it on screen.
+  jwst-gui isaac                 full Isaac Sim app (WebRTC viewer)
+  jwst-gui composer              USD Composer scene authoring (WebRTC viewer)
+  jwst-gui pilot [shower]        fly the inspector microsat around JWST (WebRTC viewer);
+                                 'shower' starts with the meteor-shower event armed
+  jwst-gui physx                 hands-off PhysX orbital-mechanics demo (WebRTC viewer)
+  jwst-gui lab [task]            Isaac Lab RL training demo, live fps in this terminal
+  jwst-gui render <stage.usd>    render to a PNG to view in JupyterHub (browser only)
+  jwst-gui viewer                open the WebRTC Streaming Client on this desktop
+Live GPU health while it runs:  jwst-gpucheck   (or: jwst-gpucheck watch)
+EOF
+    ;;
+esac

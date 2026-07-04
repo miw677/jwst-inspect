@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Isaac Sim Stream Viewer
+Comment=WebRTC client to view any streamed session on this machine
+Exec=jwst-gui viewer
+Icon=/data/shared/project/assets/icons/viewer.png
+Terminal=false
+Categories=Science;Education;
+StartupNotify=false

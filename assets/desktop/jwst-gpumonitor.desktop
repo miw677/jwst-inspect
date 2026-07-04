@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=GPU Monitor
+Comment=Live GPU utilization, memory, temperature (nvtop)
+Exec=nvtop
+Icon=/data/shared/project/assets/icons/gpumonitor.png
+Terminal=true
+Categories=Science;Education;
+StartupNotify=false

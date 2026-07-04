@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=PhysX Orbital Demo
+Comment=Zero-g PhysX orbital mechanics around JWST, streamed live
+Exec=jwst-gui physx
+Icon=/data/shared/project/assets/icons/physx.png
+Terminal=true
+Categories=Science;Education;
+StartupNotify=false

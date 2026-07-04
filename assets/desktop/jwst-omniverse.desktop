@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Omniverse Composer
+Comment=Author the JWST USD scene (streams to the WebRTC viewer)
+Exec=jwst-gui composer
+Icon=/data/shared/project/assets/icons/omniverse.png
+Terminal=true
+Categories=Science;Education;
+StartupNotify=false
