@@ -34,6 +34,16 @@ through published interfaces so no team waits on another:
   environment, scripted + learned policies, and the rasterized-to-path-traced
   evaluation.
 
+The full picture - what each team consumes from the shared raw data, what it
+builds, what it publishes read-only for the others, and where the optional
+integrations and the showcase convergence sit:
+
+![Team independence and workflow: shared data in, published artifacts out](assets/diagrams/teams_independant_workflow.png)
+
+Solid arrows are hard dependencies (each team only depends on the shared data
+and its own work); dashed arrows are optional pluggable upgrades another team
+can adopt when published. No dashed arrow ever blocks a deliverable.
+
 ---
 
 ## 2. Connect to the workstation

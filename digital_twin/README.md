@@ -5,6 +5,11 @@ asset. We depend on no other team; we publish a stable interface the others
 consume. Our GitLab fork is `nvidia-harvard/jwst_inspect-digital_twin`; the
 project-wide git rules are in [docs/gitlab_workflow.md](../docs/gitlab_workflow.md).
 
+How the three teams stay independent and where our published artifacts feed
+the others (dashed = optional, never blocking):
+
+![Team independence and workflow](../assets/diagrams/teams_independant_workflow.png)
+
 ## How our folders are organized
 
 Our tree inside the repo (`digital_twin/` in every clone of the fork):
