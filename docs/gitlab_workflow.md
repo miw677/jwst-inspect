@@ -155,6 +155,35 @@ merge request upstream at least weekly and always when an `interface/` file
 changes; sync the fork from upstream after every upstream merge, so members
 always branch from a current `main`.
 
+### The GitLab CLI (glab)
+
+`glab` (1.36.0) is installed workstation-wide, so the whole merge-request flow
+works from the terminal without the web UI. Representatives are its users;
+members do not need it (the section 4 flow is plain git over the deploy key,
+and glab requires a GitLab account).
+
+One-time login with your own gitlab.com personal access token (scopes `api` +
+`write_repository`; the token is stored under your private home):
+
+```bash
+glab auth login --hostname gitlab.com     # pick token auth, paste when prompted
+glab auth status                          # verify: Logged in to gitlab.com as <you>
+```
+
+Open the merge request from your fork to the main project (replace `<team>`):
+
+```bash
+cd ~/team/jwst_inspect
+glab mr create -R nvidia-harvard/jwst_inspect -H nvidia-harvard/jwst_inspect-<team> \
+  -s main -b main -t "One line of what lands" \
+  -d "What changed, how it was validated, which interface files moved"
+glab mr list -R nvidia-harvard/jwst_inspect      # open merge requests
+glab mr view <id> -R nvidia-harvard/jwst_inspect # details + discussion
+```
+
+Merging stays a review action for the admin or another team's representative:
+`glab mr merge <id> -R nvidia-harvard/jwst_inspect --remove-source-branch`.
+
 ## 6. Data, LFS, and the size budget
 
 - Binary files (FITS, EXR, USD, textures, images, checkpoints) are tracked
